@@ -1,2 +1,7 @@
 .env
-/venv/
+/venv
+/bookship/uploads/
+/bookship/compare
+/bookship/bookship/migrations
+db.sqlite3
+__pycache__
