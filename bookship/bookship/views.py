@@ -3,7 +3,9 @@ from django.conf import settings
 from django.views.generic.edit import FormView
 from .forms import FileUploadForm
 from .models import UploadedFile
-
+import nbformat
+from nbconvert import HTMLExporter
+from nbformatting.review_exporter import MyExporter
 
 # Create your views here.
 def index(request):
@@ -40,7 +42,7 @@ def github_integration(request):
     INSTALLATION_ID = '43170684'
     REPO_OWNER = 'amfor'
     REPO_NAME = 'nbdiff'
-    FILE_PATH = 'src/mynotebook.ipynb'
+    FILE_PATH = 'src/mynotebook2.ipynb'
 
     # Create a JSON Web Token (JWT)
     payload = {
@@ -48,7 +50,6 @@ def github_integration(request):
         'exp': int(time.time()) + 60,
         'iss': APP_ID
     }
-    print(GITHUB_PRIVATE_KEY)
     jwt_token = jwt.encode(payload, GITHUB_PRIVATE_KEY, algorithm='RS256')
 
     # Use the JWT to get an access token
@@ -74,7 +75,11 @@ def github_integration(request):
             decoded_content = base64.b64decode(file_content).decode('utf-8')
 
             # You can now use the 'decoded_content' in your Django app
-            return HttpResponse(decoded_content)
+            html_exporter = MyExporter(template_name='classic')
+            notebook = nbformat.reads(decoded_content, as_version=4)
+            (body, resources) = html_exporter.from_notebook_node(notebook)
+            return HttpResponse(body)
+
         else:
             return HttpResponse("File content is empty or not found")
     else:

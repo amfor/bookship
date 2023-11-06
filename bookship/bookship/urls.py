@@ -18,16 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 
-
-urlpatterns = [
-    # Your other URL patterns
-    path('github_integration/', views.github_integration, name='github_integration'),
-]
-
-
+from django.views.generic.base import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('index/',  views.index, name='index'), 
     path('compare/', views.FileUploadView.as_view(), name='file_upload'),
     path('github_integration/', views.github_integration, name='github_integration'),    
+    path('hello-webpack/', TemplateView.as_view(template_name='hello_webpack.html'))
+
 ]
