@@ -2,10 +2,17 @@ from django.shortcuts import render
 from django.conf import settings
 from django.views.generic.edit import FormView
 from .forms import FileUploadForm
-from .models import UploadedFile
+from .models import UploadedFile 
 import nbformat
 from nbconvert import HTMLExporter
 from nbformatting.review_exporter import MyExporter
+from nbformatting.diff_exporter import DiffExporter
+# Comments
+
+from django.http import JsonResponse
+from .models import Comment 
+import json 
+
 
 # Create your views here.
 def index(request):
@@ -75,7 +82,7 @@ def github_integration(request):
             decoded_content = base64.b64decode(file_content).decode('utf-8')
 
             # You can now use the 'decoded_content' in your Django app
-            html_exporter = MyExporter(template_name='classic')
+            html_exporter = MyExporter(template_name='lab')
             notebook = nbformat.reads(decoded_content, as_version=4)
             (body, resources) = html_exporter.from_notebook_node(notebook)
             return HttpResponse(body)
@@ -86,3 +93,60 @@ def github_integration(request):
         return HttpResponse(f"Failed to fetch file content. Status code: {file_content_response.status_code}")
 
     return HttpResponse(decoded_content)
+
+
+
+
+def diff_integration(request):
+ 
+    import json
+    def readfile(path):
+        with open(path, 'r') as f:
+            return nbformat.reads(f.read(), as_version=4)
+    a = readfile("/Users/amy/code/nbdiff/bookship/compare/mynotebook.ipynb")
+    b = readfile("/Users/amy/code/nbdiff/bookship/compare/mynotebook2.ipynb")
+
+
+    html_exporter = DiffExporter()
+    (body, resources) = html_exporter.from_notebook_node(nb=a, diff=b)
+    return HttpResponse(body)
+
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+
+
+@csrf_exempt
+def submit_comment(request):
+    if request.method == 'POST':
+        received_data = json.loads(request.body)
+        
+        new_instance = Comment(
+            thread_id=received_data.get('thread_id'),
+            previous_comment_id=received_data.get("previous_comment_id"), 
+            file_hash = received_data.get("file_hash"), 
+            cell_hash = received_data.get("cell_hash"), 
+            line_no = received_data.get("line_no"),
+            previous_file_hash=received_data.get("previous_file_hash"), 
+            contents=received_data.get("contents"), 
+            author=received_data.get("author"), 
+            assigned=received_data.get("assigned"), 
+            resolved=received_data.get("resolved")
+        )
+        new_instance.save()
+
+        return JsonResponse({'message': 'Data received and saved successfully'}, status=201)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+def load_comments(request, file_hash):
+    if request.method == 'GET':
+        comments = Comment.objects.filter(file_hash=file_hash).order_by('created_at').values('thread_id', 'file_hash', 'cell_hash', 'line_no', 'created_at', 'author', 'assigned', 'resolved', 'contents') 
+
+        for comment in comments:
+            print(comment)
+        
+        serialized_comments = list(comments)
+        return JsonResponse({'comments': serialized_comments})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)        
+      

@@ -24,6 +24,8 @@ urlpatterns = [
     path('index/',  views.index, name='index'), 
     path('compare/', views.FileUploadView.as_view(), name='file_upload'),
     path('github_integration/', views.github_integration, name='github_integration'),    
-    path('hello-webpack/', TemplateView.as_view(template_name='hello_webpack.html'))
-
+    path('hello-webpack/', TemplateView.as_view(template_name='hello_webpack.html')),
+    path('diff_integration/', views.diff_integration, name='diff_integration'),    
+    path('submit_comment/', views.submit_comment, name='submit_comment'),    
+    path('comments/get/<str:file_hash>/', views.load_comments, name='get_comments'),
 ]
