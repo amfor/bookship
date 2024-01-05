@@ -1,0 +1,104 @@
+div.highlight.hl-ipython3 {
+    height: 100%;
+
+}
+
+div.highlight.hl-ipython3 pre {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0!important;
+
+}
+
+.lineCol {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    position: relative;
+    text-align:right;
+}
+
+.lineCode {
+    border-left: 2px solid #000;
+    padding-left: 1px !important;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.cellTable {
+    width:100%;
+    border-collapse: collapse;
+    font-size:14px
+}
+
+.new-comment-thread {
+    position: relative;
+    color: black !important;
+    opacity: 1 !important;
+    border: none;
+    padding-left: 3px;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: 0px;
+    border-right: 0px;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+    z-index: 1;
+	text-align: center;
+	cursor: pointer;
+	opacity: 1;
+	text-indent: 0;
+    border-radius: 0px;
+    background: none;
+    height: 100%;
+    font-size: 14px;
+}
+
+
+/* Hover effect */
+
+.new-comment-thread:hover {
+    transition: transform .1s ease-in-out;
+    border-radius: 6px;
+    background-color: rgb(49, 128, 223);
+    transform: scale(1.1, 1.1);
+    opacity: 1; /* Blue squircle appears on hover */
+    color: white;
+}
+
+/* Notebook Styling */ 
+
+.jp-InputPrompt.jp-InputArea-prompt {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    width: 92px;
+}
+
+.jp-Notebook { 
+    margin-bottom: 1em;
+    margin-right: 0.25em;
+    margin-left: 0.25em;
+
+}
+
+.jp-OutputPrompt {
+    width:92px !important;
+}
+
+/* Page Structure */
+.nbCol { 
+    width: 80%;
+    float: left;
+
+}
+
+.annotationCol { 
+    width: 20%;
+    float: right;
+}
+
+
+.codeHighlight { 
+    background-color: rgb(235, 121, 121);
+}
