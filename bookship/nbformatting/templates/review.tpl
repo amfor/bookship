@@ -15,22 +15,11 @@
 {{ super() }}
 {% endblock markdowncell %}
 
-{% block codecell %}
-{%- if not cell.outputs -%}
-{%- set no_output_class="jp-mod-noOutputs" -%}
-{%- endif -%}
-{%- if not resources.global_content_filter.include_input -%}
-{%- set no_input_class="jp-mod-noInput" -%}
-{%- endif -%}
-<div {{ cell_id_anchor(cell) }} class="jp-Cell jp-CodeCell jp-Notebook-cell {{ no_output_class }} {{ no_input_class }} {{ celltags(cell) }}">
-{{ super() }}
-</div>
-{%- endblock codecell %}
 
 
 {% block empty_in_prompt -%} 
 <div class="jp-InputPrompt jp-InputArea-prompt" style="color: black; opacity: 1;">
-    <button class="new-comment-thread" id="code-{{cell.id}}-markdown" onclick="annotateContent(this);event.stopPropagation()">+</button>
+    <button class="new-comment-thread" id="code-{{cell.id}}_markdown" onclick="annotateContent(this);event.stopPropagation()">+</button>
 </div>
 {%- endblock empty_in_prompt %}
 
@@ -43,7 +32,7 @@
         Out[&nbsp;]:
     {%- endif -%}
 {%- endif -%}
-        <button class="new-comment-thread" id="code-{{cell.id}}-outputs" onclick="annotateContent(this);event.stopPropagation()" style="padding-right: 4px; margin-right: 5px">+</button>
+        <button class="new-comment-thread" id="code-{{cell.id}}_outputs" onclick="annotateContent(this);event.stopPropagation()" style="padding-right: 4px; margin-right: 5px">+</button>
     </div>
 {% endblock output_area_prompt %}
 
@@ -60,7 +49,7 @@
      <tbody>
      <tr>
         <td class="lineCol"><a href="#{{cell.id}}-{{codeLine}}" style="padding-right: 2px; color:#70747c; opacity:0.9;">{{ codeLine }}</a><button class="new-comment-thread" id="commentable-{{cell.id}}_{{codeLine}}" onclick="annotateContent(this);event.stopPropagation()">+</button></td>
-        <td class="flex-container lineCode" id="code-{{cell.id}}-{{codeLine}}">{{ codeContents | highlight_code(metadata=cell.metadata) | clean_html }}</td>
+        <td class="flex-container lineCode" id="code-{{cell.id}}_{{codeLine}}">{{ codeContents | highlight_code(metadata=cell.metadata) | clean_html }}</td>
      </tr>
      </tbody>
      {%- endfor -%}

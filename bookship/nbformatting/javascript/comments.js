@@ -24,6 +24,15 @@ function dtToLocal(dtzString) {
   return estDateString;
 }
 
+function getCellPrecedence() { 
+    let cells = Object.values(document.getElementsByClassName("jp-Cell"))
+    let cellIds = cells.map(element => element.id.split('=')[1]);
+    const cellOrders = Object.fromEntries(
+      cellIds.map((value, index) => [value, index + 1])
+    ); 
+    return cellOrders;
+}
+
 function resetBubblePosition(event) {
   if (selectedBubble && !selectedBubble.contains(event.target)) {
     selectedBubble.style.transform = "scale(1)";
@@ -34,35 +43,49 @@ function resetBubblePosition(event) {
       ".commentInputContainer"
     );
     commentContainer.style.display = "none";
-    toggleBubbleCode(selectedBubble.id, (on = false));
+    toggleBubbleCode(selectedBubble.id, on = false);
     selectedBubble = null;
   }
 }
 
-function toggleBubbleCode(threadId, on = true) {
-  let threadBubble = document.getElementById(threadId);
-  let threadCodeId = `code-${threadBubble.dataset["cellHash"]}-${threadBubble.dataset["lineNo"]}`;
-  let threadCodeElement = document.getElementById(threadCodeId);
 
+function toggleBubbleCode(threadId, on = true) {
+  /* 
+    This function highlights the thread's associated content
+  */
+  let threadBubble = document.getElementById(threadId);
+  let threadCodeId = `code-${threadBubble.dataset["cellHash"]}_${threadBubble.dataset["lineNo"]}`;
+  let threadCodeElement = document.getElementById(threadCodeId);
+  var highlightClassName;
+  var contentContainer;
   if (document.getElementById(threadCodeId) === undefined) {
     return;
+  } else if (threadBubble.dataset["lineNo"] == 'markdown') {
+    contentContainer = threadCodeElement.closest(".jp-MarkdownCell").querySelector(".jp-MarkdownOutput");
+    highlightClassName = "outputHighlights";
+  } else if (threadBubble.dataset["lineNo"] == 'outputs') {
+    contentContainer = threadCodeElement.closest(".jp-OutputArea-child").querySelector(".jp-OutputArea-output");
+    highlightClassName = "outputHighlights";
   } else {
-    threadCodeTextDiv = threadCodeElement.querySelector("pre");
-    threadCodeTextDiv.style.flex = "auto";
+    contentContainer = threadCodeElement.querySelector("pre");
+    contentContainer.style.flex = "auto";
+    highlightClassName = "codeHighlight";
+  } 
 
-    if (on) {
-      threadCodeTextDiv.className = "codeHighlight";
-    } else {
-      threadCodeTextDiv.className = "null";
-    }
+  if (on) {
+    contentContainer.classList.add(highlightClassName);
+  } else { 
+    contentContainer.classList.remove(highlightClassName);
+
   }
+
 }
 
 function handleThreadClick(event) {
   resetBubblePosition(event);
   let bubbleElement = event.target.closest(".commentThreadBubble");
   selectedBubble = bubbleElement; // change selected bubble
-
+  console.log(selectedBubble);
   selectedBubble.style.transform = "scale(1.1)";
   selectedBubble.style.marginLeft = "-10px";
   selectedBubble.style.boxShadow =
@@ -71,7 +94,7 @@ function handleThreadClick(event) {
   /* Show input on Bubble Selection */
   let commentContainer = selectedBubble.querySelector(".commentInputContainer");
   commentContainer.style.display = "flex";
-  toggleBubbleCode(selectedBubble.id, (on = true));
+  toggleBubbleCode(selectedBubble.id, on = true);
 
   if (event.target != this) {
     console.log("DEBUG:You clicked a descendant of #container.");
@@ -175,6 +198,7 @@ function renderCommentThread(data, newThread = false) {
 
   div.setAttribute("data-thread-id", `${firstObject.thread_id}`);
   div.setAttribute("data-cell-hash", `${firstObject.cell_hash}`);
+  div.setAttribute("data-cell-order", `${cellOrders[firstObject.cell_hash]}`);
   div.setAttribute("data-line-no", `${firstObject.line_no}`);
 
   let commentInput = div.querySelector(".commentInput");
@@ -212,10 +236,6 @@ function annotateContent(event) {
     potentiallyExistingThread.querySelector(".commentThreadHeader").click();
     return;
   } else {
-    if (lineNo === undefined) {
-      lineNo = "outputs";
-    }
-
     let formattedDate = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -301,7 +321,9 @@ function submitComment(element) {
 /* On Load */
 
 /* main */
-let annotationDiv = document.getElementsByClassName("annotationCol")[0];
+let annotationDiv = document.getElementById("annotationCol");
+var cellOrders = getCellPrecedence();
+
 var tmp;
 /* Load in Threads/Comments */
 fetch("../comments/get/" + getNotebookHash() + "/", {
@@ -350,6 +372,45 @@ fetch("../comments/get/" + getNotebookHash() + "/", {
       $(`#${String(threadId)}`).on("click", "*", handleThreadClick);
     });
   })
+  .then((tmp) => {
+    /* Order Comment Threads according to Content Ordering*/
+      let bubblesArray = Array.from(annotationDiv.querySelectorAll('.commentThreadBubble'));
+      bubblesArray.sort((a, b) => {
+        const cellOrderA = parseInt(a.getAttribute('data-cell-order'), 10);
+        const cellOrderB = parseInt(b.getAttribute('data-cell-order'), 10);
+      
+        if (cellOrderA === cellOrderB) {
+          const lineNoA = a.getAttribute('data-line-no');
+          const lineNoB = b.getAttribute('data-line-no');
+      
+          const weights = {
+            'markdown': -1, 
+            'outputs': Infinity, 
+          };
+      
+          const getEffectiveWeight = (lineNo) => {
+            if (weights.hasOwnProperty(lineNo)) {
+              return weights[lineNo];
+            } else {
+              return parseInt(lineNo, 10);
+            }
+          };
+      
+          const orderA = getEffectiveWeight(lineNoA);
+          const orderB = getEffectiveWeight(lineNoB);
+      
+          return orderA - orderB;
+        }
+      
+        // 'data-cell-order' attributes are not the same, sort by these
+        return cellOrderA - cellOrderB;
+      });
+
+      bubblesArray.forEach(bubble => {
+        annotationCol.appendChild(bubble);
+      });
+
+  })
   .catch((error) => {
     console.error("Error:", error);
   });
@@ -361,3 +422,4 @@ deselectElements = document.querySelectorAll(":not(.new-comment-thread)");
 deselectElements.forEach(function (element) {
   element.addEventListener("click", resetBubblePosition, false);
 });
+

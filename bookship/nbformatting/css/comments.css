@@ -204,3 +204,6 @@
     border-top: none;
 }
 
+.outputHighlights {
+    border: 3px solid red;
+}
