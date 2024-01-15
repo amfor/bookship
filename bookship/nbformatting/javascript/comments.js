@@ -24,13 +24,54 @@ function dtToLocal(dtzString) {
   return estDateString;
 }
 
-function getCellPrecedence() { 
-    let cells = Object.values(document.getElementsByClassName("jp-Cell"))
-    let cellIds = cells.map(element => element.id.split('=')[1]);
-    const cellOrders = Object.fromEntries(
-      cellIds.map((value, index) => [value, index + 1])
-    ); 
-    return cellOrders;
+function getCellPrecedence() {
+  let cells = Object.values(document.getElementsByClassName("jp-Cell"));
+  let cellIds = cells.map((element) => element.id.split("=")[1]);
+  const cellOrders = Object.fromEntries(
+    cellIds.map((value, index) => [value, index + 1])
+  );
+  return cellOrders;
+}
+
+function sortComments() {
+  /* Order Comment Threads according to Content Ordering*/
+  let bubblesArray = Array.from(
+    annotationDiv.querySelectorAll(".commentThreadBubble")
+  );
+  bubblesArray.sort((a, b) => {
+    const cellOrderA = parseInt(a.getAttribute("data-cell-order"), 10);
+    const cellOrderB = parseInt(b.getAttribute("data-cell-order"), 10);
+
+    if (cellOrderA === cellOrderB) {
+      const lineNoA = a.getAttribute("data-line-no");
+      const lineNoB = b.getAttribute("data-line-no");
+
+      const weights = {
+        markdown: -1,
+        outputs: Infinity,
+      };
+
+      const getEffectiveWeight = (lineNo) => {
+        if (weights.hasOwnProperty(lineNo)) {
+          return weights[lineNo];
+        } else {
+          return parseInt(lineNo, 10);
+        }
+      };
+
+      const orderA = getEffectiveWeight(lineNoA);
+      const orderB = getEffectiveWeight(lineNoB);
+
+      return orderA - orderB;
+    }
+
+    // 'data-cell-order' attributes are not the same, sort by these
+    return cellOrderA - cellOrderB;
+  });
+
+  bubblesArray.forEach((bubble) => {
+    annotationCol.appendChild(bubble);
+  });
 }
 
 function resetBubblePosition(event) {
@@ -43,11 +84,10 @@ function resetBubblePosition(event) {
       ".commentInputContainer"
     );
     commentContainer.style.display = "none";
-    toggleBubbleCode(selectedBubble.id, on = false);
+    toggleBubbleCode(selectedBubble.id, (on = false));
     selectedBubble = null;
   }
 }
-
 
 function toggleBubbleCode(threadId, on = true) {
   /* 
@@ -60,25 +100,27 @@ function toggleBubbleCode(threadId, on = true) {
   var contentContainer;
   if (document.getElementById(threadCodeId) === undefined) {
     return;
-  } else if (threadBubble.dataset["lineNo"] == 'markdown') {
-    contentContainer = threadCodeElement.closest(".jp-MarkdownCell").querySelector(".jp-MarkdownOutput");
+  } else if (threadBubble.dataset["lineNo"] == "markdown") {
+    contentContainer = threadCodeElement
+      .closest(".jp-MarkdownCell")
+      .querySelector(".jp-MarkdownOutput");
     highlightClassName = "outputHighlights";
-  } else if (threadBubble.dataset["lineNo"] == 'outputs') {
-    contentContainer = threadCodeElement.closest(".jp-OutputArea-child").querySelector(".jp-OutputArea-output");
+  } else if (threadBubble.dataset["lineNo"] == "outputs") {
+    contentContainer = threadCodeElement
+      .closest(".jp-OutputArea-child")
+      .querySelector(".jp-OutputArea-output");
     highlightClassName = "outputHighlights";
   } else {
     contentContainer = threadCodeElement.querySelector("pre");
     contentContainer.style.flex = "auto";
     highlightClassName = "codeHighlight";
-  } 
+  }
 
   if (on) {
     contentContainer.classList.add(highlightClassName);
-  } else { 
+  } else {
     contentContainer.classList.remove(highlightClassName);
-
   }
-
 }
 
 function handleThreadClick(event) {
@@ -94,7 +136,7 @@ function handleThreadClick(event) {
   /* Show input on Bubble Selection */
   let commentContainer = selectedBubble.querySelector(".commentInputContainer");
   commentContainer.style.display = "flex";
-  toggleBubbleCode(selectedBubble.id, on = true);
+  toggleBubbleCode(selectedBubble.id, (on = true));
 
   if (event.target != this) {
     console.log("DEBUG:You clicked a descendant of #container.");
@@ -103,9 +145,9 @@ function handleThreadClick(event) {
   }
 }
 
-function renderCommentContainer(data, newThread = false) {
+function renderCommentContainer(data, showComment = false) {
   var blockStyle;
-  if (newThread) {
+  if (showComment) {
     blockStyle = "flex";
   } else {
     blockStyle = "none";
@@ -120,7 +162,7 @@ function renderCommentContainer(data, newThread = false) {
         <div class="flex-child metadataBox">
             <div class="flex-child">
                 <div class="flex-child">
-                @${data.handle} (${data.fullName})
+                @${data.author} (${data.fullName})
                 </div>
                 <div class="flex-child commentMiniHeader">
                 ${data.datetime}
@@ -187,7 +229,7 @@ function renderCommentThread(data, newThread = false) {
     <textarea type="text" id="input-${firstObject.thread_id}" class="commentInput" placeholder="Commenting as ..."></textarea><br><br>
     <div class="flex-child textInputButtons">
         <button class="flex-child pill-button submitButton" onclick="submitComment(this);event.stopPropagation()">Submit</button>
-        <button class="flex-child pill-button"">Cancel</button>
+        <button class="flex-child pill-button" onclick="resetBubblePosition(this);event.stopPropagation()">Cancel</button>
     </div>
   </div>
   `;
@@ -248,12 +290,13 @@ function annotateContent(event) {
       cell_hash: cellHash,
       line_no: lineNo,
       statusIcon: "🔵",
-      handle: "employeeHandle",
+      author: "employeeHandle",
       fullName: "Full Name",
       datetime: formattedDate,
       comment: "Placeholder",
     };
     renderCommentThread(data, true);
+    sortComments();
     selectedBubble = document.getElementById(threadId);
   }
 }
@@ -263,6 +306,7 @@ function closeThread(element) {
   let commentInput = threadBubble.closest(".commentInput");
 }
 
+function cancelComment(element) {}
 function submitComment(element) {
   /** 
         Gather Data
@@ -284,11 +328,17 @@ function submitComment(element) {
     assigned: false,
     resolved: false,
   };
+  let display_data = JSON.parse(JSON.stringify(post_data));
+  display_data["datetime"] = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 
   /* if not first comment --> append */
-  if (threadBubble.querySelectorAll(".commentContainer").length > 1) {
+  if (threadBubble.querySelector(".commentContents").style.display == "flex") {
     let tempContainer = document.createElement("div");
-    tempContainer.innerHTML = renderCommentContainer(post_data);
+    tempContainer.innerHTML = renderCommentContainer(display_data, true);
     commentContainer = tempContainer.firstElementChild;
     threadBubble.insertBefore(commentContainer, threadBubble.lastElementChild);
   } else {
@@ -346,7 +396,7 @@ fetch("../comments/get/" + getNotebookHash() + "/", {
       element["cellHash"] = element["cell_hash"];
       element["lineNo"] = element["line_no"];
       element["threadId"] = element["thread_id"];
-      element["handle"] = element["author"];
+      element["author"] = element["author"];
       element["datetime"] = dtToLocal(element["created_at"]);
 
       return element;
@@ -373,43 +423,7 @@ fetch("../comments/get/" + getNotebookHash() + "/", {
     });
   })
   .then((tmp) => {
-    /* Order Comment Threads according to Content Ordering*/
-      let bubblesArray = Array.from(annotationDiv.querySelectorAll('.commentThreadBubble'));
-      bubblesArray.sort((a, b) => {
-        const cellOrderA = parseInt(a.getAttribute('data-cell-order'), 10);
-        const cellOrderB = parseInt(b.getAttribute('data-cell-order'), 10);
-      
-        if (cellOrderA === cellOrderB) {
-          const lineNoA = a.getAttribute('data-line-no');
-          const lineNoB = b.getAttribute('data-line-no');
-      
-          const weights = {
-            'markdown': -1, 
-            'outputs': Infinity, 
-          };
-      
-          const getEffectiveWeight = (lineNo) => {
-            if (weights.hasOwnProperty(lineNo)) {
-              return weights[lineNo];
-            } else {
-              return parseInt(lineNo, 10);
-            }
-          };
-      
-          const orderA = getEffectiveWeight(lineNoA);
-          const orderB = getEffectiveWeight(lineNoB);
-      
-          return orderA - orderB;
-        }
-      
-        // 'data-cell-order' attributes are not the same, sort by these
-        return cellOrderA - cellOrderB;
-      });
-
-      bubblesArray.forEach(bubble => {
-        annotationCol.appendChild(bubble);
-      });
-
+    sortComments();
   })
   .catch((error) => {
     console.error("Error:", error);
@@ -422,4 +436,3 @@ deselectElements = document.querySelectorAll(":not(.new-comment-thread)");
 deselectElements.forEach(function (element) {
   element.addEventListener("click", resetBubblePosition, false);
 });
-

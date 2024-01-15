@@ -32,7 +32,7 @@
         Out[&nbsp;]:
     {%- endif -%}
 {%- endif -%}
-        <button class="new-comment-thread" id="code-{{cell.id}}_outputs" onclick="annotateContent(this);event.stopPropagation()" style="padding-right: 4px; margin-right: 5px">+</button>
+        <button class="new-comment-thread" id="code-{{cell.id}}_outputs" onclick="annotateContent(this);event.stopPropagation()" style="padding-right: 4px;">+</button>
     </div>
 {% endblock output_area_prompt %}
 
