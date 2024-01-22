@@ -1,7 +1,6 @@
 {% extends "index.html.j2" %}
 
 {%- block body_header -%}
-
 {% if resources.theme == 'dark' %}
 <body class="jp-Notebook" data-jp-theme-light="false" data-jp-theme-name="JupyterLab Dark" data-nb-sha256="{{ resources.notebook_sha256 }}">
 {% else %}

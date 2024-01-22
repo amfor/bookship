@@ -7,14 +7,13 @@ import nbformat
 from nbconvert import HTMLExporter
 from nbformatting.review_exporter import MyExporter
 from nbformatting.diff_exporter import DiffExporter
-# Comments
 
+# Commenting Imports
 from django.http import JsonResponse
 from .models import Comment 
 import json 
 
 
-# Create your views here.
 def index(request):
     return render(request, 'bookship/index.html')
 
@@ -24,12 +23,8 @@ class FileUploadView(FormView):
     success_url = '/generated_html/'
 
     def form_valid(self, form):
-        # Save the uploaded files
         form.save()
 
-        # Call your Python command to generate the HTML
-        # You can use subprocess or any method you prefer
-        # Replace 'generate_html_command' with your actual command
         import subprocess
         subprocess.run(['nbdiff-web', form.instance.file1.path, form.instance.file2.path])
 
@@ -44,14 +39,12 @@ from .settings import GITHUB_PRIVATE_KEY
 
 
 def github_integration(request):
-    # Your GitHub App settings
     APP_ID = '398519'
     INSTALLATION_ID = '43170684'
     REPO_OWNER = 'amfor'
     REPO_NAME = 'nbdiff'
     FILE_PATH = 'src/mynotebook2.ipynb'
 
-    # Create a JSON Web Token (JWT)
     payload = {
         'iat': int(time.time()),
         'exp': int(time.time()) + 60,
@@ -59,7 +52,6 @@ def github_integration(request):
     }
     jwt_token = jwt.encode(payload, GITHUB_PRIVATE_KEY, algorithm='RS256')
 
-    # Use the JWT to get an access token
     headers = {
         'Authorization': f'Bearer {jwt_token}',
         'Accept': 'application/vnd.github.machine-man-preview+json'
@@ -68,20 +60,16 @@ def github_integration(request):
 
     access_token = access_token_response.json().get('token')
 
-    # Use the access token to access the file content
     file_content_response = requests.get(f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_PATH}', headers={'Authorization': f'Bearer {access_token}'})
     file_content = file_content_response.json().get('content')
 
-    # Use the access token to access the file content
     if file_content_response.status_code == 200:
         file_content = file_content_response.json().get('content')
         
         if file_content:
-            # Decode the base64-encoded content
             import base64
             decoded_content = base64.b64decode(file_content).decode('utf-8')
 
-            # You can now use the 'decoded_content' in your Django app
             html_exporter = MyExporter(template_name='lab')
             notebook = nbformat.reads(decoded_content, as_version=4)
             (body, resources) = html_exporter.from_notebook_node(notebook)
@@ -150,3 +138,28 @@ def load_comments(request, file_hash):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)        
       
+
+def resolve_thread(request, file_hash):
+    if request.method == 'POST':
+        try:
+            received_data = json.loads(request.body)
+
+            comment = Comment.objects.get(thread_id=received_data['thread_id'])
+            comment.your_boolean_field = True  
+            comment.save()
+            return JsonResponse({'error': 'Invalid request method'}, status=400)        
+
+        except Comment.DoesNotExist:
+            return JsonResponse({'error': 'Error Occured'}, status=400)        
+
+   
+    return JsonResponse({'error': 'Invalid request method'}, status=400)        
+            
+
+
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})            

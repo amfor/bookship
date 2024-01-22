@@ -1,7 +1,15 @@
+function getCSRFToken() {
+  return fetch('/get_csrf_token')
+      .then(response => response.json())
+      .then(data => data.csrfToken);
+}
+
+
 function isIterable(obj) {
   // Check if the object has a Symbol.iterator property or method
   return obj != null && typeof obj[Symbol.iterator] === "function";
 }
+
 
 function getNotebookHash() {
   let notebookHash = document
@@ -195,7 +203,7 @@ function renderCommentThread(data, newThread = false) {
         ${firstObject.cell_hash}
     </div>
     <div class="flex-child">
-        ${firstObject.statusIcon}
+    <svg xmlns="http://www.w3.org/2000/svg" class="resolveThread" onclick="resolveThread(this);event.stopPropagation()" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
     </div>
     </div> 
         ${renderedCommentContainers}
@@ -225,13 +233,13 @@ function renderCommentThread(data, newThread = false) {
     commentInputStyle = "none";
   }
   commentBox = `
-  <div class='flex-container commentInputContainer' style="display:${commentInputStyle};"> 
+  <form class='flex-container commentInputContainer' style="display:${commentInputStyle};"> 
     <textarea type="text" id="input-${firstObject.thread_id}" class="commentInput" placeholder="Commenting as ..."></textarea><br><br>
     <div class="flex-child textInputButtons">
-        <button class="flex-child pill-button submitButton" onclick="submitComment(this);event.stopPropagation()">Submit</button>
-        <button class="flex-child pill-button" onclick="resetBubblePosition(this);event.stopPropagation()">Cancel</button>
+        <input type="button" class="flex-child pill-button submitButton" onclick="submitComment(this);event.stopPropagation()" value="Submit">
+        <input type="button" class="flex-child pill-button" onclick="resetBubblePosition(this);event.stopPropagation()" value="Cancel">
     </div>
-  </div>
+  </form>
   `;
   var div = document.createElement("div");
   div.innerHTML = htmlTemplate + commentBox;
@@ -306,7 +314,6 @@ function closeThread(element) {
   let commentInput = threadBubble.closest(".commentInput");
 }
 
-function cancelComment(element) {}
 function submitComment(element) {
   /** 
         Gather Data
@@ -349,22 +356,25 @@ function submitComment(element) {
 
   selectedBubble.querySelector(".commentInputContainer").style.display = "none";
 
-  fetch("/submit_comment/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(post_data),
-  })
-    .then((response) => {
-      if (response.ok) {
-        console.log("Successfully submitted comment :)");
-      } else {
-        console.error("Failed to submit comment");
-      }
+  getCSRFToken().then(csrfToken => {
+    fetch("/submit_comment/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify(post_data),
     })
-    .catch((error) => {
-      console.error("Error:", error);
+      .then((response) => {
+        if (response.ok) {
+          console.log("Successfully submitted comment :)");
+        } else {
+          console.error("Failed to submit comment");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
     });
 }
 
@@ -436,3 +446,31 @@ deselectElements = document.querySelectorAll(":not(.new-comment-thread)");
 deselectElements.forEach(function (element) {
   element.addEventListener("click", resetBubblePosition, false);
 });
+
+
+
+function resolveThread(element) {
+  let bubbleElement = element.closest(".commentThreadBubble");
+  post_data = {
+    thread_id: element.dataset['threadId']
+  };
+  
+  getCSRFToken().then(csrfToken => {
+    fetch("/comments/thread/resolve/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken, // Include the CSRF token in the request headers
+        },
+        body: JSON.stringify(post_data),
+    })
+    .then(response => {
+        // Handle the response here
+        console.log(response);
+    })
+    .catch(error => {
+        // Handle any errors that occurred during the request
+        console.error(error);
+    });
+});
+}

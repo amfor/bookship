@@ -41,6 +41,8 @@ class CommentThread(models.Model):
     file_hash = models.CharField(max_length=56)
     location_id = models.CharField(max_length=56)
     created_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField()
+
     class Meta:
         app_label = 'bookship'
 
