@@ -127,4 +127,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # GITHUB PARAMS
-GITHUB_PRIVATE_KEY = config('GITHUB_PRIVATE_KEY').replace('\\n', '\n')
+GITHUB_PRIVATE_KEY = config('GITHUB_PKEY').replace('\\n', '\n')

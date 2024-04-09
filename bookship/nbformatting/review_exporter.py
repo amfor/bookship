@@ -25,7 +25,6 @@ import sys
 sys.path.append(str(parent_dir))
 from filters import split_newlines, strip_outer_div
 
-
 def load_code(folder_name="javascript", ext=".js", concatenate=False):
 
     all_contents = list()
@@ -69,10 +68,10 @@ class MyExporter(HTMLExporter):
         """
         We want to use the new template we ship with our library.
         """
-        return "review.tpl"  # full        
+        return "review.tpl"  
     
 
-    def from_notebook_node(  # type:ignore[explicit-override, override]
+    def from_notebook_node( 
         self, nb: NotebookNode, resources: Optional[Dict[str, Any]] = dict(), **kw: Any
     ) -> Tuple[str, Dict[str, Any]]:
 
@@ -89,12 +88,11 @@ class MyExporter(HTMLExporter):
 
         self.register_filter("strip_outer_div", strip_outer_div)
         self.register_filter("split_newlines", split_newlines)
-        self.register_filter("highlight_code", highlight_code)
-        self.register_filter("filter_data_type", filter_data_type)
         
         resources['notebook_sha256'] = hashlib.sha256(json.dumps(nb, sort_keys=True).encode()).hexdigest()
         resources['footer_js'] = load_code("javascript", ext=".js")
         resources['cells_css'] = load_code("css", ext=".css")
+        resources['csrf_token'] = resources['csrf_token']
         html, resources = super().from_notebook_node(nb, resources, **kw)
         soup = BeautifulSoup(html, features="html.parser")
         # Add image's alternative text

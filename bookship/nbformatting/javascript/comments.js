@@ -102,6 +102,7 @@ function toggleBubbleCode(threadId, on = true) {
     This function highlights the thread's associated content
   */
   let threadBubble = document.getElementById(threadId);
+  threadBubble.classList.add('selectedBubble-transformed');
   let threadCodeId = `code-${threadBubble.dataset["cellHash"]}_${threadBubble.dataset["lineNo"]}`;
   let threadCodeElement = document.getElementById(threadCodeId);
   var highlightClassName;
@@ -246,6 +247,10 @@ function renderCommentThread(data, newThread = false) {
   div.id = firstObject.thread_id;
   div.classList.add("flex-container", "commentThreadBubble");
 
+  if (firstObject.resolved) {
+    div.classList.add("flex-container", "commentThreadBubbleHidden");
+  } 
+
   div.setAttribute("data-thread-id", `${firstObject.thread_id}`);
   div.setAttribute("data-cell-hash", `${firstObject.cell_hash}`);
   div.setAttribute("data-cell-order", `${cellOrders[firstObject.cell_hash]}`);
@@ -284,6 +289,7 @@ function annotateContent(event) {
   if (potentiallyExistingThread) {
     selectedBubble = potentiallyExistingThread;
     potentiallyExistingThread.querySelector(".commentThreadHeader").click();
+    potentiallyExistingThread.classList.toggle("commentThreadBubbleHidden")
     return;
   } else {
     let formattedDate = new Date().toLocaleDateString("en-US", {
@@ -303,6 +309,7 @@ function annotateContent(event) {
       datetime: formattedDate,
       comment: "Placeholder",
     };
+
     renderCommentThread(data, true);
     sortComments();
     selectedBubble = document.getElementById(threadId);
@@ -331,9 +338,7 @@ function submitComment(element) {
     previous_comment_id: "pre_edit_id",
     previous_file_hash: "pre_edit_hash",
     contents: commentContents,
-    author: "SAML_author",
-    assigned: false,
-    resolved: false,
+    author: getUserHandle(),
   };
   let display_data = JSON.parse(JSON.stringify(post_data));
   display_data["datetime"] = new Date().toLocaleDateString("en-US", {
@@ -343,7 +348,7 @@ function submitComment(element) {
   });
 
   /* if not first comment --> append */
-  if (threadBubble.querySelector(".commentContents").style.display == "flex") {
+  if (threadBubble.querySelector(".commentContents")) {
     let tempContainer = document.createElement("div");
     tempContainer.innerHTML = renderCommentContainer(display_data, true);
     commentContainer = tempContainer.firstElementChild;
@@ -356,28 +361,56 @@ function submitComment(element) {
 
   selectedBubble.querySelector(".commentInputContainer").style.display = "none";
 
-  getCSRFToken().then(csrfToken => {
-    fetch("/submit_comment/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify(post_data),
+  csrfToken = document.querySelector('meta[name="csrf-token"]').content
+  fetch("/submit_comment/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify(post_data),
+  })
+    .then((response) => {
+      if (response.ok) {
+        console.log("Successfully submitted comment :)");
+      } else {
+        console.error("Failed to submit comment");
+      }
     })
-      .then((response) => {
-        if (response.ok) {
-          console.log("Successfully submitted comment :)");
-        } else {
-          console.error("Failed to submit comment");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    .catch((error) => {
+      console.error("Error:", error);
     });
-}
+    }
 
+    function resolveThread(element) {
+      let bubbleElement = element.closest(".commentThreadBubble");
+      post_data = {
+        thread_id: bubbleElement.dataset['threadId'],
+        file_hash: getNotebookHash(),
+    
+      };
+      csrfToken = document.querySelector('meta[name="csrf-token"]').content
+        fetch("/comments/thread/resolve/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken":  csrfToken
+            },
+            body: JSON.stringify(post_data),
+        })
+        .then(response => {
+            bubbleElement.classList.toggle("commentThreadBubbleHidden");
+            console.log(response);
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    }
+    
+    
+    function getUserHandle() {
+      return "saml_author"
+    }
 /* On Load */
 
 /* main */
@@ -447,30 +480,3 @@ deselectElements.forEach(function (element) {
   element.addEventListener("click", resetBubblePosition, false);
 });
 
-
-
-function resolveThread(element) {
-  let bubbleElement = element.closest(".commentThreadBubble");
-  post_data = {
-    thread_id: element.dataset['threadId']
-  };
-  
-  getCSRFToken().then(csrfToken => {
-    fetch("/comments/thread/resolve/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken, // Include the CSRF token in the request headers
-        },
-        body: JSON.stringify(post_data),
-    })
-    .then(response => {
-        // Handle the response here
-        console.log(response);
-    })
-    .catch(error => {
-        // Handle any errors that occurred during the request
-        console.error(error);
-    });
-});
-}

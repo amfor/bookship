@@ -1,5 +1,16 @@
 {% extends "index.html.j2" %}
 
+
+
+{%- block body -%}
+    <div class="flex-container">
+        <div id='nbCol' class='nbCol'>{{ super() }}</div>
+        <div id='annotationCol' class='annotationCol'></div>
+    </div>
+
+{%- endblock body -%}
+
+
 {%- block body_header -%}
 {% if resources.theme == 'dark' %}
 <body class="jp-Notebook" data-jp-theme-light="false" data-jp-theme-name="JupyterLab Dark" data-nb-sha256="{{ resources.notebook_sha256 }}">
@@ -8,7 +19,6 @@
 {% endif %}
 <main>
 {%- endblock body_header -%}
-
 
 {% block markdowncell -%}
 {{ super() }}
@@ -73,6 +83,7 @@
 
 {%- block html_head_js -%}
 
+<meta name="csrf-token" content="{{ resources.csrf_token }}">
 <script  src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script
 <script  src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.js"></script
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
@@ -81,7 +92,6 @@
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/flatly/bootstrap.min.css" rel="stylesheet">
-
 
 {%- block html_head_js_jquery -%}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" type="text/javascript"></script>
@@ -104,6 +114,7 @@
 {% for js_code in resources.footer_js %}
 <script> {{ js_code }} </script>
 {%- endfor -%}
+
 {% endblock footer_js %}
 
 

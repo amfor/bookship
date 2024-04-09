@@ -10,9 +10,11 @@ from nbformatting.diff_exporter import DiffExporter
 
 # Commenting Imports
 from django.http import JsonResponse
-from .models import Comment 
+from .models import Comment, CommentThread
 import json 
-
+from django.middleware.csrf import get_token
+from collections import defaultdict
+from django.template.loader import render_to_string
 
 def index(request):
     return render(request, 'bookship/index.html')
@@ -72,7 +74,10 @@ def github_integration(request):
 
             html_exporter = MyExporter(template_name='lab')
             notebook = nbformat.reads(decoded_content, as_version=4)
-            (body, resources) = html_exporter.from_notebook_node(notebook)
+            csrf_token = get_token(request)
+            resources = dict(csrf_token= csrf_token)
+            (body, resources) = html_exporter.from_notebook_node(notebook, resources=resources)
+            print(resources.keys())
             return HttpResponse(body)
 
         else:
@@ -101,53 +106,74 @@ def diff_integration(request):
 
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
+def is_new_comment(id):
+    return Comment.objects.filter(thread_id=id, file_hash=file_hash, contents=contents).count() == 0
 
-@csrf_exempt
+def is_existing_thread(thread_id, file_hash):
+    return CommentThread.objects.filter(thread_id=thread_id, file_hash=file_hash).count() > 0
+
 def submit_comment(request):
-    if request.method == 'POST':
-        received_data = json.loads(request.body)
-        
-        new_instance = Comment(
-            thread_id=received_data.get('thread_id'),
-            previous_comment_id=received_data.get("previous_comment_id"), 
-            file_hash = received_data.get("file_hash"), 
-            cell_hash = received_data.get("cell_hash"), 
-            line_no = received_data.get("line_no"),
-            previous_file_hash=received_data.get("previous_file_hash"), 
-            contents=received_data.get("contents"), 
-            author=received_data.get("author"), 
-            assigned=received_data.get("assigned"), 
-            resolved=received_data.get("resolved")
-        )
-        new_instance.save()
 
-        return JsonResponse({'message': 'Data received and saved successfully'}, status=201)
+
+    if request.method == 'POST':
+        # TODO: Internal Authorization Check 
+        received_data = json.loads(request.body)
+        try:
+            if not is_existing_thread(thread_id=received_data.get('thread_id'), file_hash=received_data.get('file_hash')):
+                try:
+                    new_thread_instance = CommentThread(
+                        thread_id=received_data.get('thread_id'),
+                        file_hash = received_data.get("file_hash"))
+                    new_thread_instance.save()
+                except:
+                    return JsonResponse({'error': 'Failed to start new thread. '}, status=500)
+            new_instance = Comment(
+                thread_id=received_data.get('thread_id'),
+                previous_comment_id=received_data.get("previous_comment_id"), 
+                file_hash = received_data.get("file_hash"), 
+                cell_hash = received_data.get("cell_hash"), 
+                line_no = received_data.get("line_no"),
+                previous_file_hash=received_data.get("previous_file_hash"), 
+                contents=received_data.get("contents"), 
+                author=received_data.get("author")
+            )
+            new_instance.save()
+            return JsonResponse({'message': 'Data received and saved successfully'}, status=201)
+        except:
+            # TODO: delete thread if there's an error here 
+            return JsonResponse({'error': 'Failed to start new thread.'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 def load_comments(request, file_hash):
     if request.method == 'GET':
-        comments = Comment.objects.filter(file_hash=file_hash).order_by('created_at').values('thread_id', 'file_hash', 'cell_hash', 'line_no', 'created_at', 'author', 'assigned', 'resolved', 'contents') 
+        comments = Comment.objects.filter(file_hash=file_hash).order_by('created_at').values('thread_id', 'file_hash', 'cell_hash', 'line_no', 'created_at', 'author', 'assigned_to', 'resolved', 'contents') 
 
+        from django.template.loader import render_to_string
         for comment in comments:
-            print(comment)
-        
+            #render_to_string("partials/comment_threads", comment)
+            print()
         serialized_comments = list(comments)
         return JsonResponse({'comments': serialized_comments})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)        
       
 
-def resolve_thread(request, file_hash):
+def resolve_thread(request):
     if request.method == 'POST':
         try:
             received_data = json.loads(request.body)
+            # TODO: Some internal check user is authorized
+            thread = CommentThread.objects.get(thread_id=received_data['thread_id'], file_hash=received_data['file_hash'])
+            thread.resolved = True  
+            thread.save()
+            comment = Comment.objects.filter(thread_id=received_data['thread_id'], file_hash=received_data['file_hash']).first()
+            comment.resolved = True  
 
-            comment = Comment.objects.get(thread_id=received_data['thread_id'])
-            comment.your_boolean_field = True  
+            
             comment.save()
-            return JsonResponse({'error': 'Invalid request method'}, status=400)        
+            return JsonResponse({'error': 'Thread resolved by @saml_author'}, status=200)        
 
         except Comment.DoesNotExist:
             return JsonResponse({'error': 'Error Occured'}, status=400)        
@@ -163,3 +189,42 @@ from django.middleware.csrf import get_token
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrfToken': csrf_token})            
+
+def render_new_thread(request):
+    try:
+
+        request_data = {
+            "thread_id" :request.GET['thread_id'],
+            "line_no":request.GET['line_no'],
+            "cell_hash":request.GET['cell_hash'],
+
+        }
+        request_data['first_load'] = False # We want style = "flex"
+        request_data['thread_comments'] = None
+        threads_html = render_to_string(template_name="partials/comment_thread.html", context=request_data)
+        return JsonResponse({'html':threads_html})
+    except Exception as e:
+
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+from datetime import datetime
+import pytz
+
+def render_threads(request, file_hash):
+    custom_header_value = request.META.get('timezone')
+    if request.method == 'GET':
+        comments = Comment.objects.filter(file_hash=file_hash).order_by('created_at').values('thread_id', 'file_hash', 'cell_hash', 'line_no', 'created_at', 'author', 'assigned', 'resolved', 'contents') 
+        
+
+        threads = defaultdict(list)
+        for comment in comments:
+            threads[comment['thread_id']].append(comment)
+
+        import datetime
+        threads_html = render_to_string(template_name="partials/threads.html", context={'threads': dict(threads), 'first_load': True})
+        return HttpResponse(threads_html)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)    
+    
+    

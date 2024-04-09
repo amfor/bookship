@@ -28,7 +28,9 @@ urlpatterns = [
     path('diff_integration/', views.diff_integration, name='diff_integration'),    
     path('submit_comment/', views.submit_comment, name='submit_comment'),    
     path('comments/get/<str:file_hash>/', views.load_comments, name='get_comments'),
-    path('comments/thread/resolve/<str:file_hash>/', views.load_comments, name='get_comments'),
+    path('components/comments/new', views.render_new_thread, name='new_comment_bubble'),
+
+    path('comments/thread/resolve/', views.resolve_thread, name='resolve_comments'),
     path('get_csrf_token', views.get_csrf_token, name='get_csrf_token'),
 
 ]
