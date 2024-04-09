@@ -136,6 +136,7 @@ function handleThreadClick(event) {
   resetBubblePosition(event);
   let bubbleElement = event.target.closest(".commentThreadBubble");
   selectedBubble = bubbleElement; // change selected bubble
+  selectedBubble.classList.remove("commentThreadBubbleHidden");
   console.log(selectedBubble);
   selectedBubble.style.transform = "scale(1.1)";
   selectedBubble.style.marginLeft = "-10px";
@@ -248,7 +249,7 @@ function renderCommentThread(data, newThread = false) {
   div.classList.add("flex-container", "commentThreadBubble");
 
   if (firstObject.resolved) {
-    div.classList.add("flex-container", "commentThreadBubbleHidden");
+    div.classList.add("commentThreadBubbleHidden");
   } 
 
   div.setAttribute("data-thread-id", `${firstObject.thread_id}`);
@@ -289,7 +290,7 @@ function annotateContent(event) {
   if (potentiallyExistingThread) {
     selectedBubble = potentiallyExistingThread;
     potentiallyExistingThread.querySelector(".commentThreadHeader").click();
-    potentiallyExistingThread.classList.toggle("commentThreadBubbleHidden")
+    potentiallyExistingThread.classList.remove("commentThreadBubbleHidden")
     return;
   } else {
     let formattedDate = new Date().toLocaleDateString("en-US", {

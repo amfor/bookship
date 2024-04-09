@@ -37,20 +37,11 @@
   margin-right: 0.75em;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
-.commentThreadBubbleHidden {
+
+.commentThreadBubbleHidden > .commentContainer {
   display: none;
-  flex-direction: column;
-  border-radius: 10px;
-  background-color: rgb(217, 229, 248);
-  transition: transform 0.3s ease-in-out;
-  padding: 2.5px;
-  padding-left: 5px;
-  font-family: "Roboto Mono";
-  font-size: 13px;
-  margin-top: 0.75em;
-  margin-right: 0.75em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
+
 .commentThreadHeader {
   display: flex;
   flex-direction: row;
