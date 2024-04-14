@@ -25,6 +25,17 @@
 {% endblock markdowncell %}
 
 
+{% block in_prompt -%}
+<div class="jp-InputPrompt jp-InputArea-prompt">
+    {%- if cell.execution_count is defined -%}
+        <div class='cellTags'>In&nbsp;[{{ cell.execution_count|replace(None, "&nbsp;") }}]:</div>
+        <div class='hiddenHash'>{{cell.id}}</div>
+    {%- else -%}
+        <div class='cellTags'>In&nbsp;[&nbsp;]:</div>
+        <div class='hiddenHash'>{{cell.id}}</div>
+    {%- endif -%}
+</div>
+{%- endblock in_prompt %}
 
 {% block empty_in_prompt -%} 
 <div class="jp-InputPrompt jp-InputArea-prompt" style="color: black; opacity: 1;">
@@ -89,6 +100,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Serif&display=swap" rel="stylesheet">
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/flatly/bootstrap.min.css" rel="stylesheet">

@@ -27,30 +27,49 @@
   display: flex;
   flex-direction: column;
   border-radius: 10px;
-  background-color: rgb(217, 229, 248);
+  background-color: rgb(202, 202, 223);
   transition: transform 0.3s ease-in-out;
-  padding: 2.5px;
-  padding-left: 5px;
-  font-family: "Roboto Mono";
-  font-size: 13px;
-  margin-top: 0.75em;
-  margin-right: 0.75em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  padding: 7.5px;
+  padding-right: 5px;
+  font-family: "Roboto";
+  font-size: 1.25em !important;
+  margin-top: 0.5em;
+  margin-right: 0.5em;
+  /*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);*/
+  color: #00224D;
+
 }
+
+.commentThreadBubble:hover {
+  background-color: rgb(187, 187, 215);
+}
+
 
 .commentThreadBubbleHidden > .commentContainer {
   display: none;
 }
 
+.commentThreadBubbleHidden > .commentThreadHeader {
+
+  margin-bottom: 0 !important;  
+}
+
 .commentThreadHeader {
   display: flex;
   flex-direction: row;
+  font-family: "Roboto Mono";
+  font-size: 1.4em;
+  border-bottom: 1.5px solid #dadce0;
+  border-bottom-color: rgb(218, 220, 224);
+  margin-bottom: 0.75em;
+
 }
+
 
 .commentInputContainer {
   flex-direction: column;
   display: none;
-  font-size: 0.75rem;
+  font-size: 0.25em;
 }
 
 .commentInput {
@@ -67,9 +86,6 @@
   padding-left: 8px;
 }
 
-.commentThreadBubble:hover {
-  transform: scale(1.05);
-}
 
 .flex-child {
 }
@@ -116,7 +132,7 @@
 .threadLocationMetadata {
   justify-content: flex-start;
   flex-basis: 15%;
-  color: grey;
+  color: #00224D;
 }
 
 .threadLocationMetadata.flex-child {
@@ -127,6 +143,8 @@
 .commentAuthorMetadata {
   font-size: 14px;
   max-height: 25%;
+  margin-bottom: 0.25em;
+
 }
 
 .commentAuthorMetadata.flex-child {
@@ -135,12 +153,13 @@
 
 .commentMiniHeader {
   font-size: 10px;
-  color: grey;
+  color: #00224D;
 }
 
 .commentThreadHeader {
-  font-size: 10px;
-  color: grey;
+  font-size: 0.75em !important;
+  color: #00224D;
+  padding-bottom: 5px !important;
 }
 
 .commentThreadHeader * {
@@ -148,17 +167,23 @@
   padding-left: 5px !important;
   padding-top: 0;
   padding-bottom: 0;
+
 }
 
 .commentThreadHeader > :first-child {
   opacity: 0.4;
-  border-right: 2px solid grey;
+  border-right: 2px solid #00224D;
 }
 .commentThreadHeader > :last-child {
   border-right: 0px;
   margin-right: 5px;
+}
+.commentThreadHeader > :nth-last-child(2) {
+  border-right: 0px;
+  margin-right: 5px;
   margin-left: auto;
 }
+
 
 .threadContainer {
   margin-bottom: 5px;
@@ -172,8 +197,9 @@
   vertical-align: middle;
   border-radius: 50%;
   max-height: 100%;
-  width: 32px;
-  height: 32px;
+  width: 2.5em;
+  height: 2.5em;
+  margin-right: 0.5em;
   object-fit: scale-down;
   justify-content: flex-start;
   flex: 1;
@@ -182,6 +208,7 @@
 .commentContents {
   max-height: 50%;
   margin-bottom: 0.25em;
+  margin-top: 0.25em;
 }
 
 .metadataDivider {
@@ -194,6 +221,7 @@
 
 .metadataBox {
   flex-direction: column;
+  color: #00224D;
 }
 
 .commentContainer {
@@ -201,8 +229,7 @@
 }
 
 .commentContainer {
-  border-top: 1px solid #dadce0;
-  border-top-color: rgb(218, 220, 224);
+
 }
 
 .commentContainer > :first-child {
@@ -215,8 +242,12 @@
 
 
 .selectedBubble-transformed {
-  transform:  scale(1);
-  marginLeft: 0;
-  filter: null;
+  transform:  scale(1.05) !important;
+  margin-left: 0 !important;
+  filter: null !important;
+  margin-bottom: 1em;
+  margin-top: 1.5em;
+  background-color: rgb(187, 187, 215);
+
 
 }

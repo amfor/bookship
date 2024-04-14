@@ -1,15 +1,17 @@
 function getCSRFToken() {
-  return fetch('/get_csrf_token')
-      .then(response => response.json())
-      .then(data => data.csrfToken);
+  return fetch("/get_csrf_token")
+    .then((response) => response.json())
+    .then((data) => data.csrfToken);
 }
-
 
 function isIterable(obj) {
   // Check if the object has a Symbol.iterator property or method
   return obj != null && typeof obj[Symbol.iterator] === "function";
 }
 
+function getUserHandle() {
+  return "saml_author";
+}
 
 function getNotebookHash() {
   let notebookHash = document
@@ -93,8 +95,9 @@ function resetBubblePosition(event) {
     );
     commentContainer.style.display = "none";
     toggleBubbleCode(selectedBubble.id, (on = false));
+    selectedBubble.classList.remove("selectedBubble-transformed")
     selectedBubble = null;
-  }
+  } 
 }
 
 function toggleBubbleCode(threadId, on = true) {
@@ -102,7 +105,8 @@ function toggleBubbleCode(threadId, on = true) {
     This function highlights the thread's associated content
   */
   let threadBubble = document.getElementById(threadId);
-  threadBubble.classList.add('selectedBubble-transformed');
+  threadBubble.classList.add("selectedBubble-transformed");
+
   let threadCodeId = `code-${threadBubble.dataset["cellHash"]}_${threadBubble.dataset["lineNo"]}`;
   let threadCodeElement = document.getElementById(threadCodeId);
   var highlightClassName;
@@ -146,6 +150,7 @@ function handleThreadClick(event) {
   /* Show input on Bubble Selection */
   let commentContainer = selectedBubble.querySelector(".commentInputContainer");
   commentContainer.style.display = "flex";
+  bubbleElement.classList.toggle('active')
   toggleBubbleCode(selectedBubble.id, (on = true));
 
   if (event.target != this) {
@@ -188,7 +193,7 @@ function renderCommentContainer(data, showComment = false) {
   return commentTemplate;
 }
 
-function renderCommentThread(data, newThread = false) {
+function templatizeCommentThread(data, newThread = false) {
   var htmlTemplate;
   let firstObject;
   if (isIterable(data)) {
@@ -203,6 +208,9 @@ function renderCommentThread(data, newThread = false) {
     </div>    
     <div class="flex-child">
         ${firstObject.cell_hash}
+    </div>
+    <div class="flex-child">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>
     </div>
     <div class="flex-child">
     <svg xmlns="http://www.w3.org/2000/svg" class="resolveThread" onclick="resolveThread(this);event.stopPropagation()" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
@@ -221,7 +229,11 @@ function renderCommentThread(data, newThread = false) {
             ${firstObject.cell_hash}
         </div>
         <div class="flex-child">
-            ${firstObject.statusIcon}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>
+        </div>
+        <div class="flex-child">
+        <svg xmlns="http://www.w3.org/2000/svg" class="resolveThread" onclick="resolveThread(this);event.stopPropagation()" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+        </div>
         </div>
         </div> 
             ${renderCommentContainer(firstObject, false)}
@@ -244,19 +256,31 @@ function renderCommentThread(data, newThread = false) {
   </form>
   `;
   var div = document.createElement("div");
+  div.classList.add("flex-container", "commentThreadBubble");
   div.innerHTML = htmlTemplate + commentBox;
   div.id = firstObject.thread_id;
-  div.classList.add("flex-container", "commentThreadBubble");
 
   if (firstObject.resolved) {
     div.classList.add("commentThreadBubbleHidden");
-  } 
+  }
 
   div.setAttribute("data-thread-id", `${firstObject.thread_id}`);
   div.setAttribute("data-cell-hash", `${firstObject.cell_hash}`);
   div.setAttribute("data-cell-order", `${cellOrders[firstObject.cell_hash]}`);
   div.setAttribute("data-line-no", `${firstObject.line_no}`);
 
+  return div;
+}
+
+function renderCommentThread(data, newThread = false) {
+  var htmlTemplate;
+  let firstObject;
+  if (isIterable(data)) {
+    firstObject = data[0];
+  } else {
+    firstObject = data;
+  }
+  div = templatizeCommentThread((data = data), (newThread = newThread));
   let commentInput = div.querySelector(".commentInput");
   commentInput.addEventListener("input", function () {
     this.style.height = "auto";
@@ -290,7 +314,7 @@ function annotateContent(event) {
   if (potentiallyExistingThread) {
     selectedBubble = potentiallyExistingThread;
     potentiallyExistingThread.querySelector(".commentThreadHeader").click();
-    potentiallyExistingThread.classList.remove("commentThreadBubbleHidden")
+    potentiallyExistingThread.classList.remove("commentThreadBubbleHidden");
     return;
   } else {
     let formattedDate = new Date().toLocaleDateString("en-US", {
@@ -323,9 +347,6 @@ function closeThread(element) {
 }
 
 function submitComment(element) {
-  /** 
-        Gather Data
-    **/
   threadBubble = element.closest(".commentThreadBubble");
   let threadId = threadBubble.getAttribute("data-thread-id");
   let commentContents = threadBubble.querySelector("textarea").value;
@@ -347,9 +368,13 @@ function submitComment(element) {
     month: "short",
     day: "numeric",
   });
-
-  /* if not first comment --> append */
-  if (threadBubble.querySelector(".commentContents")) {
+  console.log(display_data);
+  /* if not first comment --> append, else replace existing invisible contents */
+  if (
+    !threadBubble
+      .querySelector(".commentContents")
+      .innerHTML.includes("undefined")
+  ) {
     let tempContainer = document.createElement("div");
     tempContainer.innerHTML = renderCommentContainer(display_data, true);
     commentContainer = tempContainer.firstElementChild;
@@ -362,12 +387,12 @@ function submitComment(element) {
 
   selectedBubble.querySelector(".commentInputContainer").style.display = "none";
 
-  csrfToken = document.querySelector('meta[name="csrf-token"]').content
+  csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   fetch("/submit_comment/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      'X-CSRFToken': csrfToken
+      "X-CSRFToken": csrfToken,
     },
     body: JSON.stringify(post_data),
   })
@@ -381,37 +406,32 @@ function submitComment(element) {
     .catch((error) => {
       console.error("Error:", error);
     });
-    }
+}
 
-    function resolveThread(element) {
-      let bubbleElement = element.closest(".commentThreadBubble");
-      post_data = {
-        thread_id: bubbleElement.dataset['threadId'],
-        file_hash: getNotebookHash(),
-    
-      };
-      csrfToken = document.querySelector('meta[name="csrf-token"]').content
-        fetch("/comments/thread/resolve/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken":  csrfToken
-            },
-            body: JSON.stringify(post_data),
-        })
-        .then(response => {
-            bubbleElement.classList.toggle("commentThreadBubbleHidden");
-            console.log(response);
-        })
-        .catch(error => {
-            console.error(error);
-        });
-    }
-    
-    
-    function getUserHandle() {
-      return "saml_author"
-    }
+function resolveThread(element) {
+  let bubbleElement = element.closest(".commentThreadBubble");
+  post_data = {
+    thread_id: bubbleElement.dataset["threadId"],
+    file_hash: getNotebookHash(),
+  };
+  csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  fetch("/comments/thread/resolve/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    body: JSON.stringify(post_data),
+  })
+    .then((response) => {
+      bubbleElement.classList.toggle("commentThreadBubbleHidden");
+      console.log(response);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 /* On Load */
 
 /* main */
@@ -480,4 +500,3 @@ deselectElements = document.querySelectorAll(":not(.new-comment-thread)");
 deselectElements.forEach(function (element) {
   element.addEventListener("click", resetBubblePosition, false);
 });
-

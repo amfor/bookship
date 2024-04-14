@@ -73,11 +73,24 @@ div.highlight.hl-ipython3 pre {
     width: 92px;
 }
 
+.jp-InputPrompt > .hiddenHash {
+    display: none;
+  }
+
+  .jp-InputPrompt:hover > .hiddenHash {
+    display: flex;
+    text-align: right;
+    }
+    .jp-InputPrompt:hover > .cellTags {
+        display: none;
+        } 
+
 .jp-Notebook { 
     margin-bottom: 1em;
-    margin-right: 0.25em;
-    margin-left: 0.25em;
-    padding: 0 !important;
+    margin-right: 0.025em;
+    margin-left: 0.12em;
+    padding-right: 0px !important;
+    
 }
 
 .jp-OutputPrompt {
@@ -86,13 +99,13 @@ div.highlight.hl-ipython3 pre {
 
 /* Page Structure */
 .nbCol { 
-    width: 80%;
+    width: 75%;
     float: left;
 
 }
 
 .annotationCol { 
-    width: 20%;
+    width: 25%;
     float: right;
     align-self: flex-start;
     display: inline-flex;
