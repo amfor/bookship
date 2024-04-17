@@ -210,11 +210,16 @@ function templatizeCommentThread(data, newThread = false) {
         ${firstObject.cell_hash}
     </div>
     <div class="flex-child">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1.75em" height="1.75em"viewBox="0 0 448 512"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"></svg>
     </div>
     <div class="flex-child">
-    <svg xmlns="http://www.w3.org/2000/svg" class="resolveThread" onclick="resolveThread(this);event.stopPropagation()" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" class="resolveThread" onclick="resolveThread(this);event.stopPropagation()" width="1.75em" height="1.75em"viewBox="0 0 448 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"></svg>
     </div>
+    <div>
+    <svg xmlns="http://www.w3.org/2000/svg" class="collapseThread" onclick="collapseThread(this);event.stopPropagation()" width="1.75em" height="1.75em"viewBox="0 0 448 512"><path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/></svg>
+    </div>
+    </div>
+    
     </div> 
         ${renderedCommentContainers}
     </div>`;
@@ -408,6 +413,23 @@ function submitComment(element) {
     });
 }
 
+function collapseThread(element) {
+  let bubbleElement = element.closest(".commentThreadBubble");
+  bubbleElement.classList.toggle("commentThreadBubbleHidden");
+
+  svgElement = bubbleElement.getElementsByClassName("collapseThread")[0]
+
+  if (!bubbleElement.classList.contains("commentThreadBubbleHidden")) {
+    svgElement.style.transform = "rotate(0deg)";
+    svgElement.style.transitionDuration = "0.35s";
+  } else {
+    svgElement.style.transform = "rotate(180deg)";
+    svgElement.style.transitionDuration = "0.35s";
+  }
+
+
+
+}
 function resolveThread(element) {
   let bubbleElement = element.closest(".commentThreadBubble");
   post_data = {

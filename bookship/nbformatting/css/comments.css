@@ -23,6 +23,12 @@
 
 }
 
+.collapseThread:hover {
+  fill: #ffffff;
+  transform: scale(1.25);
+  height:90%;
+}
+
 .commentThreadBubble {
   display: flex;
   flex-direction: column;
@@ -53,6 +59,17 @@
 
   margin-bottom: 0 !important;  
 }
+
+.commentThreadHeader > .flex-child > .svg:hover {
+  transform: scale(1.25);
+  height:90%;
+}
+
+.commentThreadBubbleHidden > .commentThreadHeader > :last-child > svg {
+  transform: rotate(-180deg);
+}
+
+
 
 .commentThreadHeader {
   display: flex;
@@ -143,7 +160,6 @@
 .commentAuthorMetadata {
   font-size: 14px;
   max-height: 25%;
-  margin-bottom: 0.25em;
 
 }
 
@@ -176,11 +192,13 @@
 }
 .commentThreadHeader > :last-child {
   border-right: 0px;
-  margin-right: 5px;
 }
 .commentThreadHeader > :nth-last-child(2) {
   border-right: 0px;
-  margin-right: 5px;
+}
+
+.commentThreadHeader > :nth-last-child(3) {
+  border-right: 0px;
   margin-left: auto;
 }
 
