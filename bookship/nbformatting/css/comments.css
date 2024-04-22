@@ -1,0 +1,271 @@
+/* Comments CSS */
+
+.thread-div {
+}
+
+.thread-div > div {
+  padding-left: 5px;
+  font-family: "Lato1";
+}
+
+.thread-div:hover {
+  transform: scale(1.05);
+}
+
+.flex-container {
+  display: flex;
+}
+
+.resolveThread:hover {
+    fill: #35ae2c;
+    transform: scale(1.25);
+    height:90%;
+
+}
+
+.collapseThread:hover {
+  fill: #ffffff;
+  transform: scale(1.25);
+  height:90%;
+}
+
+.commentThreadBubble {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background-color: rgb(202, 202, 223);
+  transition: transform 0.3s ease-in-out;
+  padding: 7.5px;
+  padding-right: 5px;
+  font-family: "Roboto";
+  font-size: 1.25em !important;
+  margin-top: 0.5em;
+  margin-right: 0.5em;
+  /*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);*/
+  color: #00224D;
+
+}
+
+.commentThreadBubble:hover {
+  background-color: rgb(187, 187, 215);
+}
+
+
+.commentThreadBubbleHidden > .commentContainer {
+  display: none;
+}
+
+.commentThreadBubbleHidden > .commentThreadHeader {
+
+  margin-bottom: 0 !important;  
+}
+
+.commentThreadHeader > .flex-child > .svg:hover {
+  transform: scale(1.25);
+  height:90%;
+}
+
+.commentThreadBubbleHidden > .commentThreadHeader > :last-child > svg {
+  transform: rotate(-180deg);
+}
+
+
+
+.commentThreadHeader {
+  display: flex;
+  flex-direction: row;
+  font-family: "Roboto Mono";
+  font-size: 1.4em;
+  border-bottom: 1.5px solid #dadce0;
+  border-bottom-color: rgb(218, 220, 224);
+  margin-bottom: 0.75em;
+
+}
+
+
+.commentInputContainer {
+  flex-direction: column;
+  display: none;
+  font-size: 0.25em;
+}
+
+.commentInput {
+  width: 100%;
+  min-height: 32px; 
+  padding: 3px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  resize: none;
+  height: 1.25em;
+  border-radius: 1.5em;
+  padding-left: 8px;
+}
+
+
+.flex-child {
+}
+
+.submitButton {
+}
+
+.cancelButton {
+  background-color: transparent;
+  color: red;
+  opacity: 0.8;
+  border: 1px !important;
+  border-color: black !important;
+  border-radius: 50rem !important;
+}
+
+.pill-button {
+  padding: 0.15rem 0.35rem;
+  border: 1px solid #007bff;
+  border-radius: 50rem; 
+  background-color: transparent;
+  color: #007bff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.pill-button:hover {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+.textInputButtons {
+  margin-top: 5px;
+}
+
+.rounded-pill {
+  border: 0px;
+}
+
+
+.threadLocationMetadata {
+  justify-content: flex-start;
+  flex-basis: 15%;
+  color: #00224D;
+}
+
+.threadLocationMetadata.flex-child {
+  font-size: 10px;
+}
+
+
+.commentAuthorMetadata {
+  font-size: 14px;
+  max-height: 25%;
+
+}
+
+.commentAuthorMetadata.flex-child {
+  flex-direction: column;
+}
+
+.commentMiniHeader {
+  font-size: 10px;
+  color: #00224D;
+}
+
+.commentThreadHeader {
+  font-size: 0.75em !important;
+  color: #00224D;
+  padding-bottom: 5px !important;
+}
+
+.commentThreadHeader * {
+  padding-right: 5px !important;
+  padding-left: 5px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+
+}
+
+.commentThreadHeader > :first-child {
+  opacity: 0.4;
+  border-right: 2px solid #00224D;
+}
+.commentThreadHeader > :last-child {
+  border-right: 0px;
+}
+.commentThreadHeader > :nth-last-child(2) {
+  border-right: 0px;
+}
+
+.commentThreadHeader > :nth-last-child(3) {
+  border-right: 0px;
+  margin-left: auto;
+}
+
+
+.threadContainer {
+  margin-bottom: 5px;
+}
+
+.nameAndTime {
+  flex: 19;
+}
+
+.authorAvatar {
+  vertical-align: middle;
+  border-radius: 50%;
+  max-height: 100%;
+  width: 2.5em;
+  height: 2.5em;
+  margin-right: 0.5em;
+  object-fit: scale-down;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.commentContents {
+  max-height: 50%;
+  margin-bottom: 0.25em;
+  margin-top: 0.25em;
+}
+
+.metadataDivider {
+}
+
+.threadStatus {
+  margin-left: auto;
+  padding-right: 10px;
+}
+
+.metadataBox {
+  flex-direction: column;
+  color: #00224D;
+}
+
+.commentContainer {
+  flex-direction: column;
+}
+
+.commentContainer {
+
+}
+
+.commentContainer > :first-child {
+  border-top: none;
+}
+
+.outputHighlights {
+  border: 3px solid red;
+}
+
+
+.selectedBubble-transformed {
+  transform:  scale(1.05) !important;
+  margin-left: 0 !important;
+  filter: null !important;
+  margin-bottom: 1em;
+  margin-top: 1.5em;
+  background-color: rgb(187, 187, 215);
+
+
+}

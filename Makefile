@@ -2,7 +2,7 @@
 
 # Name of the virtual environment directory
 VENV_NAME := venv
-
+APP_NAME := bookship
 # Python interpreter (modify as needed)
 PYTHON := python3
 
@@ -19,7 +19,7 @@ clean:
 	rm -rf $(VENV_NAME)
 
 migrations:
-	$(VENV_NAME)/bin/python ./bookship/manage.py makemigrations bookship 
+	$(VENV_NAME)/bin/python ./bookship/manage.py makemigrations $(APP_NAME) 
 	$(VENV_NAME)/bin/python ./bookship/manage.py migrate 
 
 server:
